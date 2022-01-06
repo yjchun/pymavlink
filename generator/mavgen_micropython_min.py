@@ -146,7 +146,7 @@ def native_mavfmt(field):
     map = {
         'float': 'f',
         'double': 'd',
-        'char': 'c',
+        'char': 'B', # micropython does not support 'c'
         'int8_t': 'b',
         'uint8_t': 'B',
         'uint8_t_mavlink_version': 'v',
@@ -165,7 +165,7 @@ def mavfmt(field):
     map = {
         'float': 'f',
         'double': 'd',
-        'char': 'c',
+        'char': 'B',
         'int8_t': 'b',
         'uint8_t': 'B',
         'uint8_t_mavlink_version': 'B',
