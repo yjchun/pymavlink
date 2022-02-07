@@ -105,7 +105,7 @@ def generate_classes(outf, msgs):
     wrapper = textwrap.TextWrapper(initial_indent="        ", subsequent_indent="        ")
 
     outf.write("""
-_MSGDEF_LIST = [
+msgdefs = {
 """)
     for m in msgs:
 
@@ -116,37 +116,31 @@ _MSGDEF_LIST = [
         fieldenums_str = byname_hash_from_field_attribute(m, "enum")
         fieldunits_str = byname_hash_from_field_attribute(m, "units")
 
-        fieldtypes_str = ", ".join(["'%s'" % s for s in m.fieldtypes])
+        #fieldtypes_str = ", ".join(["'%s'" % s for s in m.fieldtypes])
+        fieldtypes_str = "".join(["%s" % fmtmap[s] for s in m.fieldtypes])
         if m.instance_field is not None:
             instance_field = "'%s'" % m.instance_field
             instance_offset = m.field_offsets[m.instance_field]
         else:
             instance_field = "None"
             instance_offset = -1
-        outf.write(f"""    (MsgId.{m.name.upper()},
+        outf.write(f"""    MsgId.{m.name.upper()}: MessageDef(MsgId.{m.name.upper()},
         ({fieldname_str}),
-        ({fieldtypes_str}),
+        '{fieldtypes_str}',
         {tuple(m.order_map)},
         {tuple(m.len_map)},
         {tuple(m.array_len_map)},
         {m.crc_extra}, '{m.fmtstr}'),
 """)
 
-    outf.write("""    ]
-
-msgdefs = {}
-for l in _MSGDEF_LIST:
-	msgdefs[l[0]] = MessageDef(*l)
+    outf.write("""}
 
 """)
 
-
-def native_mavfmt(field):
-    '''work out the struct format for a type (in a form expected by mavnative)'''
-    map = {
+fmtmap = {
         'float': 'f',
         'double': 'd',
-        'char': 'B', # micropython does not support 'c'
+        'char': 'c', # micropython does not support 'c'
         'int8_t': 'b',
         'uint8_t': 'B',
         'uint8_t_mavlink_version': 'v',
@@ -157,7 +151,9 @@ def native_mavfmt(field):
         'int64_t': 'q',
         'uint64_t': 'Q',
         }
-    return map[field.type]
+def native_mavfmt(field):
+    '''work out the struct format for a type (in a form expected by mavnative)'''
+    return fmtmap[field.type]
 
 
 def mavfmt(field):
@@ -165,7 +161,7 @@ def mavfmt(field):
     map = {
         'float': 'f',
         'double': 'd',
-        'char': 'B',
+        'char': 'B', # micropython does not support 'c'
         'int8_t': 'b',
         'uint8_t': 'B',
         'uint8_t_mavlink_version': 'B',
